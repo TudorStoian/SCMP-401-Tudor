@@ -1,1 +1,21 @@
+Presentation 1
 
+I feel like I wasn't quite ready to present my project at such length.  I thought I was doing a good enough job explaining what the bootstrap is, but Prof. Garcia seemed unconvinced a) that there was much use for
+the bootstrap outside of Statistics, and b) that current implementations of it are that difficult to use. It would have been good to have evidence on hand to demonstrate, but that is something I can show next time.
+
+Since then I have actually been getting some hands-on experience with the bootstrap. Getting individual components to work has been straightforward: I have found a way to randomly generate numbers in a given range, 
+and using built-in functions to obtain statistics has been, with one exception, smooth.Thus, I have been able to get histograms for the resamplings that are indistinguishable from the already available implementations .
+
+What has turned out to be difficult is making sense of the existing bootstrap package in R. The best example is this: to generate bootstrap samples with their relevant statistic, one can use the function bootstrap().
+That would seem simple enough, except there are confusing parameters required : the parameter "func" does not represent the function that calculates the statistic, that is in fact "theta". Here there was a bizarre issue
+with the mean() function. When used as a parameter it would throw an error about the trim ,even though I never specified that I wanted the trimmed mean.  My own, rather naive implementation somehow does not run into this
+problem. The most perplexing of all is the output: it is a list with 5 components: three of which are null unless "func" was actually specified, another which specifies the parameters used in this instance of bootstrap()
+, and lastly the actual statistics computed, under the not obvious heading of thetastar (theta *). Thus, getting a histogram of the simulations ,for instance, requires reference to this thetastar rather than the bootstrap()
+object, and is difficult for a person in a beginner Statistics course to wrap their head around without guidance.
+
+I am currently trying to wrap my head around the specifics of getting the bootstrap to calculate a confidence interval. I have not yet gotten the existing implementation to work, but my own somewhat crude version is able
+obtain an empirical result for any statistic I have asked it to (although I have not yet made my own crazy functions like kurtosis/IQR ). I will also have to be careful about exactly what version of the confidence interval
+this is, which will require more research.
+
+
+ 

@@ -29,7 +29,7 @@ print(counter)
 # Here I'll try to compute the relevant statistic for a resampling, obviously how difficult this is depends on the statistic in question
 #For now, I'll try to implement the mean and median for the resamples.
 sample1=c()
-for(i in 1:15){
+for(i in 1:15){ #I have chosen 15, since that is the sample size for the law dataset.
   sample1[i]=sample( 1:15, 1)
 }
 mean(sample1)
@@ -72,10 +72,17 @@ hist(boot_mean$thetastar)
 
 
 
-#There are a number of complications with using the built-in 
 
-#abcnon(law$GPA,mean, alpha = 0.05)
+#abcnon(law$GPA,mean_function, alpha = 0.05)
 
-#Might be worth getting more data, and I know Stat2 has a lot of it available.
-library(Stat2Data)
-data("Cereal")
+
+theta <- function(p,x) {sum(p*x)/sum(p)}
+results <- abcnon(law$GPA, theta)  
+results$limits
+
+#I see now how to compare these, although it is very counter-intuitive:
+#When looking at limits, I look at the 0.025 and 0.975 abc entries.
+#This is very close to what I got empirically, although it seems shifted.
+#I am still confused about what p is (the vector of proportions ,whatever that is)
+#and why it is actually needed.
+#The output also seems needlessly unintuitive , 

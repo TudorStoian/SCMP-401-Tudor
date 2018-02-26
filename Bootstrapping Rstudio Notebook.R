@@ -49,7 +49,7 @@ for(j in 1:B ){
 hist(matrix_of_statistics)
 summary(matrix_of_statistics)
 #Question to ponder: is it worth sorting the data ahead of processing? At first it seems harmless, but since we resample, perhaps it has no effect
-
+#Answer: Yes, there is no point, since resampling eliminates any benefit from it.
 
 #I can create an empirical 95% confidence interval by ordering these statistics, and then choosing the relevant percentile
 sorted_statistics= sort(matrix_of_statistics)
@@ -59,6 +59,26 @@ right_end= sorted_statistics[976]
 
 interval_statistics=c(left_end,right_end)
 interval_statistics
+
+
+#One other alternative is to take the mean and standard deviation of the observations, where we can use the normality assumption:
+mean(sorted_statistics)
+sd(sorted_statistics)
+
+left_end= mean(sorted_statistics) - 2 * sd(sorted_statistics)
+right_end= mean(sorted_statistics) + 2 * sd(sorted_statistics)
+
+interval_statistics2=c(left_end,right_end)
+interval_statistics2
+
+#Yet another version "flips" the offsets to the mean. E.g. if 2.5 percentile is 10 units below the mean , and 97.5 percentile is 6 units above the mean, 
+#We create an interval that goes from 6 units below to 10 units above. It is not obvious why we do this, but to the extent that I understand this
+#this has the effect of carrying through the effects of transformations. Might want to doublecheck this point.
+mean(sorted_statistics) - ( sorted_statistics[976] - mean(sorted_statistics))
+mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[26])
+
+
+
 
 hist(law$GPA)
 t.test(law$GPA )
@@ -86,3 +106,8 @@ results$limits
 #I am still confused about what p is (the vector of proportions ,whatever that is)
 #and why it is actually needed.
 #The output also seems needlessly unintuitive , 
+
+
+#After talking with Professor Hartlaub, we have decided that the vector of proportions indicates the number of times a given value appears
+#in the original set of observations (think frequency , like a histogram). I was perplexed why we would care, but the Professor told me 
+#that it's a quirk of the way they implemented, and them being careful about ties.

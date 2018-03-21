@@ -4,7 +4,11 @@ install.packages("bootstrap") #if the R studio in question does not already have
 library(bootstrap)
 data("law")
 
+summary(law$GPA)
+hist(law$GPA)
 
+
+################# TESTING SAMPLING ROUTINES###########################
 #Here I test out how well randomly selecting a number works
 test_prob=c()
 k=10000
@@ -25,7 +29,6 @@ for(i in 1:k){
 print(counter)
 #Seems like this works
 
-
 # Here I'll try to compute the relevant statistic for a resampling, obviously how difficult this is depends on the statistic in question
 #For now, I'll try to implement the mean and median for the resamples.
 sample1=c()
@@ -35,58 +38,11 @@ for(i in 1:15){ #I have chosen 15, since that is the sample size for the law dat
 mean(sample1)
 median(sample1)
 
-#Here I'll extend the algorithm to perform to generate B samples and generate the 
-B= 1000 #This is the number of bootstrap replications 
-
-matrix_of_statistics=c()
-for(j in 1:B ){
-  sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
-  for(i in 1:15){
-    sample1[i]= law$GPA[ sample( 1:15, 1)] 
-  }
-  matrix_of_statistics[j]= mean(sample1)
-}
-hist(matrix_of_statistics)
-summary(matrix_of_statistics)
-#Question to ponder: is it worth sorting the data ahead of processing? At first it seems harmless, but since we resample, perhaps it has no effect
-#Answer: Yes, there is no point, since resampling eliminates any benefit from it.
-
-#I can create an empirical 95% confidence interval by ordering these statistics, and then choosing the relevant percentile
-sorted_statistics= sort(matrix_of_statistics)
-
-left_end= sorted_statistics[26]
-right_end= sorted_statistics[976]
-
-interval_statistics=c(left_end,right_end)
-interval_statistics
+################################################################### Tibshirani implementation
 
 
-#One other alternative is to take the mean and standard deviation of the observations, where we can use the normality assumption:
-mean(sorted_statistics)
-sd(sorted_statistics)
-
-left_end= mean(sorted_statistics) - 2 * sd(sorted_statistics)
-right_end= mean(sorted_statistics) + 2 * sd(sorted_statistics)
-
-interval_statistics2=c(left_end,right_end)
-interval_statistics2
-
-#Yet another version "flips" the offsets to the mean. E.g. if 2.5 percentile is 10 units below the mean , and 97.5 percentile is 6 units above the mean, 
-#We create an interval that goes from 6 units below to 10 units above. It is not obvious why we do this, but to the extent that I understand this
-#this has the effect of carrying through the effects of transformations. Might want to doublecheck this point.
-mean(sorted_statistics) - ( sorted_statistics[976] - mean(sorted_statistics))
-mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[26])
-
-
-
-
-hist(law$GPA)
-t.test(law$GPA )
-median(law$GPA)
-
-#Next I compute the standard error using the bootstrap, as detailed in Effron and Tibshirani
-
-boot_mean=bootstrap(law$GPA,1000,mean)
+boot_mean=bootstrap(law$GPA,1000,median) 
+str(boot_mean)  #Notice the type of object that comes out of bootstrap
 hist(boot_mean$thetastar)
 
 
@@ -97,9 +53,9 @@ hist(boot_mean$thetastar)
 
 
 theta <- function(p,x) {sum(p*x)/sum(p)}
-results <- abcnon(law$GPA, theta)  
+results <- abcnon(law$GPA, theta)   #Format goes against convention in Statistics.
+str(results)
 results$limits
-
 #I see now how to compare these, although it is very counter-intuitive:
 #When looking at limits, I look at the 0.025 and 0.975 abc entries.
 #This is very close to what I got empirically, although it seems shifted.
@@ -111,3 +67,65 @@ results$limits
 #After talking with Professor Hartlaub, we have decided that the vector of proportions indicates the number of times a given value appears
 #in the original set of observations (think frequency , like a histogram). I was perplexed why we would care, but the Professor told me 
 #that it's a quirk of the way they implemented, and them being careful about ties.
+
+
+################################################################### My own implementation
+
+
+#Here I'll extend the algorithm to perform to generate B samples and generate the relevant statistic
+B= 1000 #This is the number of bootstrap replications 
+
+matrix_of_statistics=c()
+for(j in 1:B ){
+  sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
+  for(i in 1:15){
+    sample1[i]= law$GPA[ sample( 1:15, 1)] 
+  }
+  matrix_of_statistics[j]= mean(sample1) 
+  #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER
+}
+hist(matrix_of_statistics)
+summary(matrix_of_statistics)
+#Question to ponder: is it worth sorting the data ahead of processing? At first it seems harmless, but since we resample, perhaps it has no effect
+#Answer: Yes, there is no point, since resampling eliminates any benefit from it.
+
+sorted_statistics= sort(matrix_of_statistics)
+
+#One other alternative is to take the mean and standard deviation of the observations, where we can use the normality assumption:
+mean(sorted_statistics)
+sd(sorted_statistics)
+
+left_end= mean(sorted_statistics) - 2 * sd(sorted_statistics)
+right_end= mean(sorted_statistics) + 2 * sd(sorted_statistics)
+
+interval_statistics2=c(left_end,right_end)
+interval_statistics2
+
+
+
+#I can create an empirical 95% confidence interval by ordering these statistics, and then choosing the relevant percentile
+
+
+left_end= sorted_statistics[25]
+right_end= sorted_statistics[975]
+
+interval_statistics=c(left_end,right_end)
+interval_statistics
+
+
+
+#Yet another version "flips" the offsets to the mean. E.g. if 2.5 percentile is 10 units below the mean , and 97.5 percentile is 6 units above the mean, 
+#We create an interval that goes from 6 units below to 10 units above. It is not obvious why we do this, but to the extent that I understand this
+#this has the effect of carrying through the effects of transformations. Might want to doublecheck this point.
+left=mean(sorted_statistics) - ( sorted_statistics[976] - mean(sorted_statistics))
+right= mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[26])
+
+interval_statistics3=c(left,right)
+interval_statistics3
+
+###################################### Looking at the source code
+
+bootstrap:::abcnon
+
+bootstrap:::bootstrap
+

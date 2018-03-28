@@ -129,3 +129,24 @@ bootstrap:::abcnon
 
 bootstrap:::bootstrap
 
+####################################### Defining a function
+
+tudor_bootstrap <- function( dataset, method = mean, B=1000, signficance_level= 0.95){
+  n= length(dataset)
+  
+  matrix_of_statistics=c()
+  for(j in 1:B ){
+    sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
+    for(i in 1:n){
+      sample1[i]= dataset[ sample( 1:n, 1)] 
+    }
+    matrix_of_statistics[j]= method(sample1) 
+    #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER
+  }
+  
+  sorted_statistics= sort(matrix_of_statistics)
+  return( c( sorted_statistics[B* (1 - signficance_level)/2],sorted_statistics[B* (signficance_level +(1 - signficance_level)/2)] ) )
+}
+
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95)
+

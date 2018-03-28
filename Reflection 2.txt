@@ -1,0 +1,13 @@
+Reflection 2
+
+Since the last time I have made strides in understanding how the existing implementation is structured. It became marginally easier after seeing a bit more of the
+documentation, although that came at the cost of finding out I was being misled by the names of the various parts, and at times outright lied to.
+
+
+Most importantly, I have begun work on a way to abstract my existing code. Currently I have made a function that can specify the dataset
+the statistic we are interested in, as well as the other relevant parameters (number of bootstrap replications, B, and significance level).
+Currently the implementation gives the percentile confidence interval. Next I will implement the other types of confidence interval.
+
+One of the more interesting challenges ahead is incorporating one of the suggestions from the audience, that my program run a behind the scenes
+analysis, to see if the default is appropriate to the dataset at hand. I have some ideas of tests to run, but not a 100% clear implementation plan.
+

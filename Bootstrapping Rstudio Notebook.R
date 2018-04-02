@@ -131,7 +131,7 @@ bootstrap:::bootstrap
 
 ####################################### Defining a function
 
-tudor_bootstrap <- function( dataset, method = mean, B=1000, signficance_level= 0.95){
+tudor_bootstrap <- function( dataset, method = mean, B=1000, signficance_level= 0.95, interval_type= "percentile"){
   n= length(dataset)
   
   matrix_of_statistics=c()
@@ -145,8 +145,24 @@ tudor_bootstrap <- function( dataset, method = mean, B=1000, signficance_level= 
   }
   
   sorted_statistics= sort(matrix_of_statistics)
+  if(interval_type == "percentile"){
   return( c( sorted_statistics[B* (1 - signficance_level)/2],sorted_statistics[B* (signficance_level +(1 - signficance_level)/2)] ) )
+  }
+  if(interval_type ==  "normal"){
+    
+    left_end= mean(sorted_statistics) - 2 * sd(sorted_statistics)
+    right_end= mean(sorted_statistics) + 2 * sd(sorted_statistics)
+    
+    return(c(left_end,right_end))
+  }
+  if(interval_type == "backwards"){
+    left=mean(sorted_statistics) - ( sorted_statistics[B* (signficance_level +(1 - signficance_level)/2)] - mean(sorted_statistics))
+    right= mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[B* (1 - signficance_level)/2])
+    return(c(left,right))
+  }
 }
 
 tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95)
-
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95,interval_type = "percentile")
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95,interval_type = "normal")
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95,interval_type = "backwards")

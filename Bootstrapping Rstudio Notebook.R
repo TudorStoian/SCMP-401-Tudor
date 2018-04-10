@@ -131,7 +131,7 @@ bootstrap:::bootstrap
 
 ####################################### Defining a function
 
-tudor_bootstrap <- function( dataset, method = mean, B=1000, signficance_level= 0.95, interval_type= "percentile"){
+tudor_bootstrap <- function( dataset, method = mean, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram= TRUE){
   n= length(dataset)
   
   matrix_of_statistics=c()
@@ -145,24 +145,100 @@ tudor_bootstrap <- function( dataset, method = mean, B=1000, signficance_level= 
   }
   
   sorted_statistics= sort(matrix_of_statistics)
+  summary(sorted_statistics)
+  print("The mean is ")
+  print(mean(sorted_statistics))
+  print("The standard error is")
+  print(sd(sorted_statistics))
+  if(show_histogram==TRUE){
+  hist(sorted_statistics)}
   if(interval_type == "percentile"){
-  return( c( sorted_statistics[B* (1 - signficance_level)/2],sorted_statistics[B* (signficance_level +(1 - signficance_level)/2)] ) )
+  return( c( sorted_statistics[B* (1 - confidence_level)/2],sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] ) )
   }
   if(interval_type ==  "normal"){
     
-    left_end= mean(sorted_statistics) - 2 * sd(sorted_statistics)
-    right_end= mean(sorted_statistics) + 2 * sd(sorted_statistics)
+    left_end= mean(sorted_statistics) - qt(confidence_level,n-1) * sd(sorted_statistics)
+    right_end= mean(sorted_statistics) + qt(confidence_level,n-1) * sd(sorted_statistics)
     
     return(c(left_end,right_end))
   }
   if(interval_type == "backwards"){
-    left=mean(sorted_statistics) - ( sorted_statistics[B* (signficance_level +(1 - signficance_level)/2)] - mean(sorted_statistics))
-    right= mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[B* (1 - signficance_level)/2])
+    left=mean(sorted_statistics) - ( sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] - mean(sorted_statistics))
+    right= mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[B* (1 - confidence_level)/2])
     return(c(left,right))
   }
 }
+library(Stat2Data)
+data("Blood1")
 
-tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95)
-tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95,interval_type = "percentile")
-tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95,interval_type = "normal")
-tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,signficance_level = 0.95,interval_type = "backwards")
+tudor_bootstrap(dataset = Blood1$SystolicBP ,method = mean,B = 100,confidence_level = 0.98)
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,confidence_level = 0.95,interval_type = "percentile")
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,confidence_level = 0.95,interval_type = "normal")
+tudor_bootstrap(dataset = law$GPA ,method = mean,B = 100,confidence_level = 0.95,interval_type = "backwards")
+
+
+crazy_method = function(X){
+  return(abs(mean(X)))
+}
+
+in_class_crazy_method = function(X){
+  ######FOR THE IN CLASS DEMONSTRATION
+  
+}
+
+
+tudor_bootstrap(dataset = law$GPA ,method = crazy_method,B = 100,confidence_level  = 0.95)
+
+
+tudor_bootstrap2 <- function( dataset1,dataset2 ,method = cor, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE){
+  n= length(dataset1)
+  
+  matrix_of_statistics=c()
+  for(j in 1:B ){
+    sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
+    sample2=c()
+    for(i in 1:n){
+      roll=sample( 1:n, 1)
+      sample1[i]= dataset1[ roll]
+      sample2[i]= dataset2[roll]
+    }
+    matrix_of_statistics[j]= method(sample1,sample2) 
+    #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER
+  }
+  
+  sorted_statistics= sort(matrix_of_statistics)
+  summary(sorted_statistics)
+  print("The mean is ")
+  print(mean(sorted_statistics))
+  print("The standard error is")
+  print(sd(sorted_statistics))
+  if(show_histogram==TRUE){
+    hist(sorted_statistics)}
+  if(interval_type == "percentile"){
+    return( c( sorted_statistics[B* (1 - confidence_level)/2],sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] ) )
+  }
+  if(interval_type ==  "normal"){
+    
+    left_end= mean(sorted_statistics) - qt(confidence_level,n-1) * sd(sorted_statistics)
+    right_end= mean(sorted_statistics) + qt(confidence_level,n-1) * sd(sorted_statistics)
+    
+    return(c(left_end,right_end))
+  }
+  if(interval_type == "backwards"){
+    left=mean(sorted_statistics) - ( sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] - mean(sorted_statistics))
+    right= mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[B* (1 - confidence_level)/2])
+    return(c(left,right))
+  }
+}
+cor(law$LSAT,law$GPA)
+
+slope <- function(X,Y){
+  a=lm(X~Y)$coefficients[2]
+  return(a)
+}
+tudor_bootstrap2(dataset1 = law$LSAT,dataset2 = law$GPA,method = slope)
+
+in_class_crazy_method2 = function(X,Y){
+  ######FOR THE IN CLASS DEMONSTRATION
+  
+}

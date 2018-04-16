@@ -190,17 +190,29 @@ in_class_crazy_method = function(X){
 tudor_bootstrap(dataset = law$GPA ,method = crazy_method,B = 100,confidence_level  = 0.95)
 
 
-tudor_bootstrap2 <- function( dataset1,dataset2 ,method = cor, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE){
+tudor_bootstrap2 <- function( dataset1,dataset2 ,method = cor, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE,paired=TRUE){
   n= length(dataset1)
-  
+  n2=length(dataset2)
   matrix_of_statistics=c()
   for(j in 1:B ){
     sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
     sample2=c()
+    if(paired==TRUE){
     for(i in 1:n){
       roll=sample( 1:n, 1)
       sample1[i]= dataset1[ roll]
       sample2[i]= dataset2[roll]
+    }
+    }
+    if(paired==FALSE){
+      for(i in 1:n){
+        roll=sample( 1:n, 1)
+        sample1[i]= dataset1[ roll]
+      }
+      for(i in 1:n2){
+        roll=sample( 1:n2, 1)
+        sample2[i]= dataset2[roll]
+      }
     }
     matrix_of_statistics[j]= method(sample1,sample2) 
     #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER

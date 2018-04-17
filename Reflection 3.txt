@@ -1,0 +1,10 @@
+Reflection III
+
+Since last time I have made good progress in making a general wrapper for the bootstrap. Currently, it supports one and two sample problems,(with the option of paired
+or unpaired in the latter case), and allows the user to make up the relevant statistical method on the fly. There is one bug that I have to look into, in the form
+of a significance level higher than 0.98 not generating a corresponding confidence interval.
+
+One of the bigger technical questions is being able to take in and process an arbitrary number of samples. This is a problem of me not understanding the necessary
+architecture in R, but hopefully it's solvable. The other big task is to actually put all of this into an R package, which is more complicated than it seemed, requiring
+a C++ compiler, for instance.
+

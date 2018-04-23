@@ -198,11 +198,11 @@ tudor_bootstrap2 <- function( dataset1,dataset2 ,method = cor, B=1000, confidenc
     sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
     sample2=c()
     if(paired==TRUE){
-    for(i in 1:n){
-      roll=sample( 1:n, 1)
-      sample1[i]= dataset1[ roll]
-      sample2[i]= dataset2[roll]
-    }
+      for(i in 1:n){
+        roll=sample( 1:n, 1)
+        sample1[i]= dataset1[ roll]
+        sample2[i]= dataset2[roll]
+      }
     }
     if(paired==FALSE){
       for(i in 1:n){
@@ -250,7 +250,67 @@ slope <- function(X,Y){
 }
 tudor_bootstrap2(dataset1 = law$LSAT,dataset2 = law$GPA,method = slope)
 
-in_class_crazy_method2 = function(X,Y){
-  ######FOR THE IN CLASS DEMONSTRATION
+
+
+
+
+
+
+
+tudor_bootstrapk= function( number_of_samples, data_matrix, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE,paired=TRUE){
+  length_matrix=c()
+  for(i in 1:number_of_samples){
+    length_matrix[i]= length(data_matrix[,i])
+  }
   
+  matrix_of_statistics=c()
+  for(j in 1:B ){
+    sample_matrix= matrix(ncol = number_of_samples)
+    if(paired==TRUE){
+      roll_matrix=  sample( 1:length_matrix[1], length_matrix[1], replace = TRUE) 
+      for(k in 1:number_of_samples){
+        for(i in 1:length_matrix[1]){
+          sample_matrix[i,k]= data_matrix[ roll[i],k]
+        }
+      }
+    }
+    
+    if(paired==FALSE){
+      for(k in 1:number_of_samples){
+        roll_matrix=  sample( 1:length_matrix[k], length_matrix[k], replace = TRUE)
+        for(i in 1:length_matrix[k]){
+          sample_matrix[i,k]= data_matrix[ roll[i],k]
+        }
+      }
+    }
+    matrix_of_statistics[j]= method(sample_matrix[,1:number_of_samples]) 
+    #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER
+  }
+  
+  
+
+  
+  sorted_statistics= sort(matrix_of_statistics)
+  summary(sorted_statistics)
+  print("The mean is ")
+  print(mean(sorted_statistics))
+  print("The standard error is")
+  print(sd(sorted_statistics))
+  if(show_histogram==TRUE){
+    hist(sorted_statistics)}
+  if(interval_type == "percentile"){
+    return( c( sorted_statistics[B* (1 - confidence_level)/2],sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] ) )
+  }
+  if(interval_type ==  "normal"){
+    
+    left_end= mean(sorted_statistics) - qt(confidence_level,n-1) * sd(sorted_statistics)
+    right_end= mean(sorted_statistics) + qt(confidence_level,n-1) * sd(sorted_statistics)
+    
+    return(c(left_end,right_end))
+  }
+  if(interval_type == "backwards"){
+    left=mean(sorted_statistics) - ( sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] - mean(sorted_statistics))
+    right= mean(sorted_statistics) + ( mean(sorted_statistics) - sorted_statistics[B* (1 - confidence_level)/2])
+    return(c(left,right))
+  }
 }

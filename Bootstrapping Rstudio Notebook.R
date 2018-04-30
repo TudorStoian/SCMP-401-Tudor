@@ -129,11 +129,10 @@ bootstrap:::abcnon
 
 bootstrap:::bootstrap
 
-####################################### Defining a function
+####################################### 1st sample bootstrap
 
 tudor_bootstrap <- function( dataset, method = mean, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram= TRUE){
   n= length(dataset)
-  
   matrix_of_statistics=c()
   for(j in 1:B ){
     sample1=c() #We have an option here, we could commit to memory all the resamplings we obtained, but really we only care about the sample statistic
@@ -151,9 +150,9 @@ tudor_bootstrap <- function( dataset, method = mean, B=1000, confidence_level= 0
   print("The standard error is")
   print(sd(sorted_statistics))
   if(show_histogram==TRUE){
-  hist(sorted_statistics)}
+    hist(sorted_statistics)}
   if(interval_type == "percentile"){
-  return( c( sorted_statistics[B* (1 - confidence_level)/2],sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] ) )
+    return( c( sorted_statistics[B* (1 - confidence_level)/2],sorted_statistics[B* (confidence_level +(1 - confidence_level)/2)] ) )
   }
   if(interval_type ==  "normal"){
     
@@ -168,6 +167,7 @@ tudor_bootstrap <- function( dataset, method = mean, B=1000, confidence_level= 0
     return(c(left,right))
   }
 }
+
 library(Stat2Data)
 data("Blood1")
 
@@ -182,13 +182,13 @@ crazy_method = function(X){
 }
 
 in_class_crazy_method = function(X){
-  ######FOR THE IN CLASS DEMONSTRATION
   
 }
 
 
 tudor_bootstrap(dataset = law$GPA ,method = crazy_method,B = 100,confidence_level  = 0.95)
 
+################################# 2 Sample version
 
 tudor_bootstrap2 <- function( dataset1,dataset2 ,method = cor, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE,paired=TRUE){
   n= length(dataset1)
@@ -248,16 +248,15 @@ slope <- function(X,Y){
   a=lm(X~Y)$coefficients[2]
   return(a)
 }
+
+
 tudor_bootstrap2(dataset1 = law$LSAT,dataset2 = law$GPA,method = slope)
 
 
+##################### K-sample version
 
-
-
-
-
-
-tudor_bootstrapk= function( number_of_samples, data_matrix, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE,paired=TRUE){
+tudor_bootstrapk= function( data_matrix,method, B=1000, confidence_level= 0.95, interval_type= "percentile",show_histogram=TRUE,paired=TRUE){
+  number_of_samples= length(data_matrix[1,])
   length_matrix=c()
   for(i in 1:number_of_samples){
     length_matrix[i]= length(data_matrix[,i])
@@ -265,12 +264,12 @@ tudor_bootstrapk= function( number_of_samples, data_matrix, B=1000, confidence_l
   
   matrix_of_statistics=c()
   for(j in 1:B ){
-    sample_matrix= matrix(ncol = number_of_samples)
+    sample_matrix= matrix(ncol = number_of_samples,nrow = max(length_matrix))
     if(paired==TRUE){
       roll_matrix=  sample( 1:length_matrix[1], length_matrix[1], replace = TRUE) 
       for(k in 1:number_of_samples){
         for(i in 1:length_matrix[1]){
-          sample_matrix[i,k]= data_matrix[ roll[i],k]
+          sample_matrix[i,k]= data_matrix[ roll_matrix[i],k]
         }
       }
     }
@@ -279,17 +278,15 @@ tudor_bootstrapk= function( number_of_samples, data_matrix, B=1000, confidence_l
       for(k in 1:number_of_samples){
         roll_matrix=  sample( 1:length_matrix[k], length_matrix[k], replace = TRUE)
         for(i in 1:length_matrix[k]){
-          sample_matrix[i,k]= data_matrix[ roll[i],k]
+          sample_matrix[i,k]= data_matrix[ roll_matrix[i],k]
         }
       }
     }
-    matrix_of_statistics[j]= method(sample_matrix[,1:number_of_samples]) 
+    matrix_of_statistics[j]= method(sample_matrix) 
     #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER
   }
   
-  
 
-  
   sorted_statistics= sort(matrix_of_statistics)
   summary(sorted_statistics)
   print("The mean is ")
@@ -314,3 +311,39 @@ tudor_bootstrapk= function( number_of_samples, data_matrix, B=1000, confidence_l
     return(c(left,right))
   }
 }
+
+
+
+intercept_k_compact <- function(datamatrix){
+  k= length(datamatrix[1,]) 
+  observations= length(datamatrix[,1])
+  except_first= matrix(nrow = observations,ncol = k-1)
+  for(i in 1:(k-1)){
+  except_first[,i]=datamatrix[,i+1]   
+  }
+  
+  a=lm(datamatrix[,1]~except_first)$coefficients[1]
+  return(a)
+}
+
+library(Stat2Data)
+data("MedGPA")
+
+#Gonna try a baseline to see what I'm comparing against.
+
+lm(MedGPA$BCPM~MedGPA$GPA+MedGPA$VR+MedGPA$PS)
+
+
+
+testMed= matrix(nrow=55 ,ncol = 3)
+testMed[,1]= MedGPA$GPA
+testMed[,2]= MedGPA$VR
+testMed[,3]= MedGPA$PS
+
+lm(testMed[,1]~testMed[,2]+testMed[,3])
+
+
+
+intercept_k_compact(testMed)
+
+tudor_bootstrapk( data_matrix = testMed, method = intercept_k_compact)

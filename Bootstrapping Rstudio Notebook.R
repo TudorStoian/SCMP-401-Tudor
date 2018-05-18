@@ -283,10 +283,8 @@ tudor_bootstrapk= function( data_matrix,method, B=1000, confidence_level= 0.95, 
       }
     }
     matrix_of_statistics[j]= method(sample_matrix) 
-    #matrix_of_statistics[j]= IQR(sample1)  # THIS IS THE FUNCTION SPECIFIER
   }
   
-
   sorted_statistics= sort(matrix_of_statistics)
   summary(sorted_statistics)
   print("The mean is ")
